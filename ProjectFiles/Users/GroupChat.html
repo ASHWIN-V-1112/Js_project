@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Group Chat</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .chat-container {
+            height: 60vh;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        .message {
+            margin-bottom: 15px;
+            padding: 10px;
+            border-radius: 10px;
+            max-width: 70%;
+        }
+        .current-user {
+            background-color: #007bff;
+            color: white;
+            margin-left: auto;
+        }
+        .other-user {
+            background-color: #e9ecef;
+            margin-right: auto;
+        }
+    </style>
+</head>
+<body>
+      <nav class="navbar navbar-expand-lg bg-primary" data-bs-theme="dark">
+    <div class="container-fluid">
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+        aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
+        <ul class="navbar-nav">
+          <li class="nav-item border hover">
+            <a class="nav-link active" aria-current="page" href="#">Group chat</a>
+          </li>
+          <li class="nav-item border">
+            <a class="nav-link active" href="UserList.html">Manage Users</a>
+          </li>
+          <li class="nav-item border">
+            <a class="nav-link active" href="DocumentList.html">Manage Documents</a>
+          </li>
+          <li class="nav-item border">
+            <a class="nav-link active" href="../WelcomePage.html">Logout</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+
+    <div class="container mt-4">
+        <h2 class="mb-4">Group Chat</h2>
+        
+        <div class="chat-container" id="chatContainer">
+        </div>
+
+        <div class="input-group mb-3">
+            <input type="text" class="form-control" id="messageInput" 
+                   placeholder="Type your message...">
+            <button class="btn btn-primary" onclick="sendMessage()">Send</button>
+        </div>
+    </div>
+
+    <script>
+        const currentUser = JSON.parse(localStorage.getItem('currentUser')) || {};
+
+        let messages = JSON.parse(localStorage.getItem('chatMessages')) || [];
+
+        function displayMessages() {
+            const container = document.getElementById('chatContainer');
+            container.innerHTML = '';
+            
+            messages.forEach(msg => {
+                const isCurrentUser = msg.userId === currentUser.id;
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `message ${isCurrentUser ? 'current-user' : 'other-user'}`;
+                messageDiv.innerHTML = `
+                    <div class="fw-bold">${msg.sender}</div>
+                    <div>${msg.content}</div>
+                    <div class="text-end small">${msg.timestamp}</div>
+                `;
+                container.appendChild(messageDiv);
+            });
+            
+            // Scroll to bottom
+            container.scrollTop = container.scrollHeight;
+        }
+
+        // Send new message
+        function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const content = input.value.trim();
+            
+            if (!content) return;
+
+            const newMessage = {
+                id: Date.now(),
+                userId: currentUser.id,
+                sender: currentUser.fullname,
+                content: content,
+                timestamp: new Date().toLocaleTimeString()
+            };
+
+            messages.push(newMessage);
+            localStorage.setItem('chatMessages', JSON.stringify(messages));
+            input.value = '';
+            displayMessages();
+        }
+
+        // Initial display
+        displayMessages();
+
+        // Auto-refresh every 2 seconds
+        setInterval(() => {
+            messages = JSON.parse(localStorage.getItem('chatMessages')) || [];
+            displayMessages();
+        }, 2000);
+
+        // Send on Enter key
+        document.getElementById('messageInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+    </script>
+</body>
+</html>
